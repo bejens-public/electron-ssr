@@ -1,5 +1,5 @@
 import path from 'path'
-import { execFile } from 'child_process'
+import { exec } from 'child_process'
 // import treeKill from 'tree-kill'
 import { dialog } from 'electron'
 import { appConfig$ } from './data'
@@ -12,12 +12,13 @@ let child
 /**
  * 运行shell命令并写入到日志中
  * @param {*String} command 待执行的shell命令
+ * @param params
  */
 export function runCommand (command, params) {
   if (command && params.length) {
     const commandStr = `${command} ${params.join(' ')}`
     logger.info('run command: %s', commandStr.replace(/-k [\d\w]* /, '-k ****** '))
-    child = execFile(command, params)
+    child = exec(commandStr)
     child.stdout.on('data', logger.info)
     child.stderr.on('data', logger.error)
   }
@@ -25,9 +26,7 @@ export function runCommand (command, params) {
 
 /**
  * 运行ssr
- * @param {*Object} config ssr配置
- * @param {*String} ssrPath local.py的路径
- * @param {*[Number|String]} localPort 本地共享端口
+ * @param appConfig
  */
 export async function run (appConfig) {
   const listenHost = appConfig.shareOverLan ? '0.0.0.0' : '127.0.0.1'
