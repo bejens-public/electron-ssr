@@ -31,7 +31,7 @@ export function runCommand (command, params) {
 export async function run (appConfig) {
   const listenHost = appConfig.shareOverLan ? '0.0.0.0' : '127.0.0.1'
   // 先结束之前的
-  await stop()
+  await stop(false, true)
   try {
     await isHostPortValid(listenHost, appConfig.localPort || 1080)
   } catch (e) {
@@ -81,7 +81,7 @@ export async function run (appConfig) {
 /**
  * 结束command的后台运行
  */
-export function stop (force = false) {
+export function stop (force = false, isPython = false) {
   if (child && child.pid) {
     logger.log('Kill client')
     return new Promise((resolve, reject) => {
@@ -98,7 +98,11 @@ export function stop (force = false) {
         !force && showNotification(`进程 ${child.pid} 可能无法关闭，尝试手动关闭`)
         resolve()
       }, 5000)
-      process.kill(child.pid, 'SIGKILL')
+      if (isPython) {
+        process.kill(child.pid + 1, 'SIGKILL')
+      } else {
+        process.kill(child.pid, 'SIGKILL')
+      }
       // child.kill()
       // treeKill(child.pid, 'SIGKILL', err => {
       //   if (err) {
@@ -137,7 +141,7 @@ appConfig$.subscribe(data => {
       if (appConfig.enable) {
         runWithConfig(appConfig)
       } else {
-        stop()
+        stop(false, true)
       }
     } else if (appConfig.enable) {
       if (['ssrPath', 'index', 'localPort', 'shareOverLan'].some(key => changed.indexOf(key) > -1)) {
@@ -146,7 +150,7 @@ appConfig$.subscribe(data => {
       if (changed.indexOf('configs') > -1) {
         // configs被清空
         if (!appConfig.configs.length) {
-          stop()
+          stop(false, true)
         } else if (!oldConfig.configs.length) {
           // configs由空到有
           runWithConfig(appConfig)

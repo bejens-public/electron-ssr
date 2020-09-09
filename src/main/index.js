@@ -90,7 +90,7 @@ bootstrap.then(() => {
     logger.info('power suspend')
     stopTask()
     // setProxyToNone()
-    stopCommand(true)
+    stopCommand(true, true)
   }).on('resume', () => {
     // 恢复
     logger.info('power resumed')
@@ -120,7 +120,7 @@ app.on('will-quit', e => {
   stopHttpProxyServer()
   stopPacServer()
   clearShortcuts()
-  stopCommand(true).then(() => {
+  stopCommand(true, true).then(() => {
     app.exit(0)
   })
 })
